@@ -10,10 +10,15 @@ class Sound {
   });
 
   factory Sound.fromJson(Map<String, dynamic> json) {
+    final previews = json['previews'];
+    if (previews == null || previews['preview-lq-mp3'] == null) {
+      throw Exception('Missing preview');
+    }
+
     return Sound(
       name: json['name'] ?? 'Unknown',
       duration: (json['duration'] ?? 0).toDouble(),
-      previewUrl: json['previews']['preview_hq_mp3'],
+      previewUrl: previews['preview-lq-mp3'],
     );
   }
 }

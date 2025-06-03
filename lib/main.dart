@@ -18,7 +18,7 @@ class TiltTunesApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home:SoundListScreen(),
+      home:HomeScreen(), //Defines init load page
     );
   }
 }
