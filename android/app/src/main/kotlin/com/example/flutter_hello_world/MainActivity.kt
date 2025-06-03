@@ -1,4 +1,4 @@
-package com.example.flutter_hello_world
+package com.example.tilt_tunes
 
 import io.flutter.embedding.android.FlutterActivity
 

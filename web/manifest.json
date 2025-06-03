@@ -1,6 +1,6 @@
 {
-    "name": "flutter_hello_world",
-    "short_name": "flutter_hello_world",
+    "name": "tilt_tunes",
+    "short_name": "tilt_tunes",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
