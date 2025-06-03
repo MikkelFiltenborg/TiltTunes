@@ -14,7 +14,7 @@ class SoundListScreen extends StatefulWidget {
 class _SoundListScreenState extends State<SoundListScreen> {
   final FreesoundApiClient _apiClient = FreesoundApiClient();
   late Future<List<Sound>> _futureSounds;
-  final TextEditingController _searchController = TextEditingController(text: 'laugh');
+  final TextEditingController _searchController = TextEditingController(text: '');
   String _currentlyPlayingUrl = '';
 
   @override
@@ -42,7 +42,9 @@ class _SoundListScreenState extends State<SoundListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Sound Results')),
+      appBar: AppBar(title: Text('Sounds',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+        )),
       body: Column(
         children: [
           Padding(
