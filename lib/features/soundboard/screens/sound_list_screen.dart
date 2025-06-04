@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:tile_tunes/data/sound_assignment_manager.dart';
 import '../../../core/api_client.dart';
 import '../../../data/sound_model.dart';
 
 class SoundListScreen extends StatefulWidget {
-  const SoundListScreen({super.key});
+  final void Function(Sound sound, int buttonIndex)? onAssign;
+  const SoundListScreen({super.key, this.onAssign});
 
   @override
   _SoundListScreenState createState() => _SoundListScreenState();
@@ -44,7 +46,9 @@ class _SoundListScreenState extends State<SoundListScreen> {
     return Scaffold(
       appBar: AppBar(title: Text('Sounds',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-        )),
+        ),
+        centerTitle: true,
+      ),
       body: Column(
         children: [
           Padding(
@@ -90,8 +94,21 @@ class _SoundListScreenState extends State<SoundListScreen> {
                     return ListTile(
                       title: Text(sound.name),
                       subtitle: Text('${sound.duration.toStringAsFixed(1)} sec'),
-                      trailing: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
-                      onTap: () => _handlePlayPause(sound.previewUrl),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(isPlaying ? Icons.stop : Icons.play_circle_outline_rounded),
+                            onPressed: () => _handlePlayPause(sound.previewUrl),
+                          ),
+                          if (widget.onAssign != null)
+                            IconButton(
+                              icon: Icon(Icons.add),
+                              tooltip: 'Assign to Button',
+                              onPressed: () => _showAssignDialog(sound)
+                            ),
+                        ],
+                      ),
                     );
                   },
                 );
@@ -100,6 +117,32 @@ class _SoundListScreenState extends State<SoundListScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showAssignDialog(Sound sound) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Assign to Button'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(4, (index) {
+              return ListTile(
+                title: Text('Button ${index+1}'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  if (widget.onAssign != null) {
+                    widget.onAssign!(sound, index);
+                  }
+                  Navigator.of(context).pop();
+                },
+              );
+            }),
+          ),
+        );
+      },
     );
   }
 }

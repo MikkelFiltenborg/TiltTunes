@@ -1,31 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:tile_tunes/data/sound_assignment_manager.dart';
 import 'settings_screen.dart';
+import 'package:audioplayers/audioplayers.dart';
 
-class HomeScreen extends StatelessWidget {
-  final List<String> soundTitles = [
-    'Sound 1', // Button 1 Top
-    'Sound 2', // Button 2 Right
-    'Sound 3', // Button 3 Bottom
-    'Sound 4', // Button 4 Left
-  ];
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+ 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-  HomeScreen({super.key});
+class _HomeScreenState extends State<HomeScreen> {
+  // Default Button Titles T R B L
+  List<String> soundTitles = [
+    'No Sound 1',
+    'No Sound 2',
+    'No Sound 3',
+    'No Sound 4',
+    ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSoundAssignments();
+  }
+
+  void _loadSoundAssignments() {
+    setState(() {
+      for (int i = 0; i < 4; i++) {
+        final sound = SoundAssignmentManager.getSoundForButton(i);
+        if (sound != null) {
+          soundTitles[i] = sound.name;
+        } else {
+          soundTitles[i] = 'Button ${i+1}';
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tilt Tunes'),
+        title: const Text('Tilt Tunes',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+        ),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              // Reloads Assignments When Returning From SettingScreen
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const SettingsScreen(),
                 ),
               );
+              _loadSoundAssignments();
             },
           ),
         ],
@@ -37,7 +69,8 @@ class HomeScreen extends StatelessWidget {
 
           return Stack(
             children: [
-              // Button 1 Top
+
+              // Button Top
               Positioned(
                 top: 0,
                 left: 0,
@@ -48,28 +81,28 @@ class HomeScreen extends StatelessWidget {
                   direction: TriangleDirection.down,
                   text: soundTitles[0],
                   textAlign: Alignment.topCenter,
-                  textPadding: const EdgeInsets.only(top: 75),
+                  textPadding: const EdgeInsets.only(top: 75, left: 50),
                   onTap: () => _onButtonTap(context, 1),
                 ),
               ),
 
-              // Button 2 Right
+              // Button Right
               Positioned(
                 top: 0,
                 right: 0,
                 bottom: 0,
                 width: width / 2,
                 child: _TriangleButton(
-                  color: Colors.yellow.shade700,
+                  color: Colors.yellow,
                   direction: TriangleDirection.left,
                   text: soundTitles[1],
                   textAlign: Alignment.centerRight,
-                  textPadding: const EdgeInsets.only(right: 25),
+                  textPadding: const EdgeInsets.only(right: 0),
                   onTap: () => _onButtonTap(context, 2),
                 ),
               ),
 
-              // Button 3 Bottom
+              // Button Bottom
               Positioned(
                 left: 0,
                 right: 0,
@@ -80,12 +113,12 @@ class HomeScreen extends StatelessWidget {
                   direction: TriangleDirection.up,
                   text: soundTitles[2],
                   textAlign: Alignment.bottomCenter,
-                  textPadding: const EdgeInsets.only(bottom: 75),
+                  textPadding: const EdgeInsets.only(bottom: 75, left: 50),
                   onTap: () => _onButtonTap(context, 3),
                 ),
               ),
 
-              // Button 4 Left
+              // Button Left
               Positioned(
                 top: 0,
                 left: 0,
@@ -96,7 +129,7 @@ class HomeScreen extends StatelessWidget {
                   direction: TriangleDirection.right,
                   text: soundTitles[3],
                   textAlign: Alignment.centerLeft,
-                  textPadding: const EdgeInsets.only(left: 25),
+                  textPadding: const EdgeInsets.only(left: 50),
                   onTap: () => _onButtonTap(context, 4),
                 ),
               ),
@@ -107,10 +140,16 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _onButtonTap(BuildContext context, int buttonNumber) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Button $buttonNumber tapped')),
-    );
+  void _onButtonTap(BuildContext context, int buttonNumber) async {
+    final sound = SoundAssignmentManager.getSoundForButton(buttonNumber - 1);
+    if (sound != null) {
+      final player = AudioPlayer();
+      await player.play(UrlSource(sound.previewUrl));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No sound assigned to Button $buttonNumber')),
+      );
+    }
   }
 }
 
@@ -146,13 +185,25 @@ class _TriangleButton extends StatelessWidget {
             padding: textPadding,
             child: Align(
               alignment: textAlign,
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  shadows: [Shadow(blurRadius: 2, color: Colors.black45, offset: Offset(1,1))],
+              child: SizedBox(
+                width: 120,
+                child: Text(
+                  text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 2,
+                        color: Colors.black45,
+                        offset: Offset(1, 1),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),

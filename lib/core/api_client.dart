@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import '../data/sound_model.dart';
 
 class FreesoundApiClient {
-  static const String _baseUrl = 'https://freesound.org/apiv2';
-  final String _apiKey = 'KD9OlFxBX3fvSOteFGrNcUKk0UebDUdGh4xz1ELZ'; // Replace Api Key if needed.
+  static const String _baseUrl = 'https://freesound.org/apiv2'; // Freesound.org Api
+  final String _apiKey = 'KD9OlFxBX3fvSOteFGrNcUKk0UebDUdGh4xz1ELZ'; // Api Key
 
   Future<List<Sound>> searchSounds(String query) async {
     final response = await http.get(
@@ -14,7 +14,7 @@ class FreesoundApiClient {
       },
     );
 
-//TODO! remove print when done
+// ToDo!: remove print when done
     // ignore: avoid_print
     print('Status code: ${response.statusCode}');
         // ignore: avoid_print
@@ -25,7 +25,7 @@ class FreesoundApiClient {
       final data = jsonDecode(response.body);
       final List results = data['results'];
 
-//TODO! remove print when done
+// ToDo!: remove print when done
       // ignore: avoid_print
       print('API returned ${results.length} raw results');
 
@@ -34,7 +34,7 @@ class FreesoundApiClient {
             try {
               return Sound.fromJson(json);
             } catch (_) {
-              return null; // Skip entries without previews
+              return null; // Skips Entries Without Previews
             }
           })
           .where((sound) => sound != null)

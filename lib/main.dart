@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tile_tunes/features/soundboard/screens/settings_screen.dart';
 import 'features/soundboard/screens/home_screen.dart';
 import 'features/soundboard/screens/sound_list_screen.dart';
 
@@ -19,7 +18,7 @@ class TiltTunesApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home:HomeScreen(), //Defines init load page
+      home:HomeScreen(), // Defines Init Load Page
     );
   }
 }

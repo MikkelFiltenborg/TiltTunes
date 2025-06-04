@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'sound_list_screen.dart'; // Adjust import path to your sound list screen
+import 'package:tile_tunes/data/sound_assignment_manager.dart';
+import 'sound_list_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -9,9 +10,9 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _useTiltTrigger = true; // Toggle switch state
-  double _sensitivityX = 0.5;  // Slider initial value for X
-  double _sensitivityY = 0.5;  // Slider initial value for Y
+  bool _useTiltTrigger = true; // Toggle Trigger State
+  double _sensitivityX = 0.5;  // Initial Value X Slider
+  double _sensitivityY = 0.5;  // Initial Value Y Slider
 
   @override
   Widget build(BuildContext context) {
@@ -20,13 +21,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: const Text('Settings',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
         ),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Toggle switch row
+            // Slide Toggle Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -46,9 +48,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Sensitivity X slider
+            // X Slider
             Text(
-              'Gyroscope Sensitivity X',
+              'Tilt Sensitivity X',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             Slider(
@@ -64,9 +66,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
 
-            // Sensitivity Y slider
+            // Y Slider
             Text(
-              'Gyroscope Sensitivity Y',
+              'Tilt Sensitivity Y',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             Slider(
@@ -84,18 +86,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 40),
 
-            // Button to open sound selection screen
+            // More Sounds
             Center(
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.volume_up_rounded),
                 label: const Text('More Sounds',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SoundListScreen(),
+                      builder: (context) => SoundListScreen(
+                        onAssign: (sound, buttonIndex) {
+                          SoundAssignmentManager.assignSoundToButton(sound, buttonIndex);
+                        },
+                      ),
                     ),
                   );
                 },
