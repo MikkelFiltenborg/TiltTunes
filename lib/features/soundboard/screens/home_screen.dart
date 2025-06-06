@@ -1,48 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:tile_tunes/data/sound_assignment_manager.dart';
 import 'settings_screen.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
- 
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Default Button Titles T R B L
   List<String> soundTitles = [
     'No Sound 1',
     'No Sound 2',
     'No Sound 3',
     'No Sound 4',
-    ];
+  ];
+
+  late StreamSubscription _gyroscopeSubscription;
+  bool _useTiltTrigger = true;
+  double _xSensitivity = 0.5; // Threshold for x axis
+  double _ySensitivity = 0.5; // Threshold for y axis
+  bool _canTrigger = true;
 
   @override
   void initState() {
     super.initState();
     _loadSoundAssignments();
+    _startListeningToGyroscope();
   }
 
   void _loadSoundAssignments() {
     setState(() {
       for (int i = 0; i < 4; i++) {
         final sound = SoundAssignmentManager.getSoundForButton(i);
-        if (sound != null) {
-          soundTitles[i] = sound.name;
-        } else {
-          soundTitles[i] = 'Button ${i+1}';
-        }
+        soundTitles[i] = sound?.name ?? 'Button ${i + 1}';
       }
     });
+  }
+
+  void _startListeningToGyroscope() {
+    _gyroscopeSubscription = gyroscopeEventStream().listen((event) {
+      if (!_useTiltTrigger || !_canTrigger) return;
+
+      final x = event.x;
+      final y = event.y;
+
+      if (y < -_ySensitivity) {
+        _triggerButton(0); // Top
+      } else if (x < -_xSensitivity) {
+        _triggerButton(1); // Right
+      } else if (y > _ySensitivity) {
+        _triggerButton(2); // Bottom
+      } else if (x > _xSensitivity) {
+        _triggerButton(3); // Left
+      }
+    });
+  }
+
+  void _triggerButton(int index) {
+    _onButtonTap(context, index + 1);
+    _canTrigger = false;
+    Future.delayed(const Duration(seconds: 1), () {
+      _canTrigger = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    _gyroscopeSubscription.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tilt Tunes',
+        title: const Text(
+          'Tilt Tunes',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
         ),
         centerTitle: true,
@@ -50,13 +88,20 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () async {
-              // Reloads Assignments When Returning From SettingScreen
-              await Navigator.push(
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const SettingsScreen(),
                 ),
               );
+
+              if (result is Map<String, dynamic>) {
+                setState(() {
+                  _useTiltTrigger = result['useTilt'] ?? true;
+                  _xSensitivity = result['sensitivityX'] ?? 1.5;
+                  _ySensitivity = result['sensitivityY'] ?? 1.5;
+                });
+              }
               _loadSoundAssignments();
             },
           ),
@@ -69,8 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           return Stack(
             children: [
-
-              // Button Top
+              // Top
               Positioned(
                 top: 0,
                 left: 0,
@@ -85,8 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => _onButtonTap(context, 1),
                 ),
               ),
-
-              // Button Right
+              // Right
               Positioned(
                 top: 0,
                 right: 0,
@@ -101,8 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => _onButtonTap(context, 2),
                 ),
               ),
-
-              // Button Bottom
+              // Bottom
               Positioned(
                 left: 0,
                 right: 0,
@@ -117,8 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => _onButtonTap(context, 3),
                 ),
               ),
-
-              // Button Left
+              // Left
               Positioned(
                 top: 0,
                 left: 0,
@@ -251,5 +292,6 @@ class _TriangleClipper extends CustomClipper<Path> {
   }
 
   @override
-  bool shouldReclip(_TriangleClipper oldClipper) => oldClipper.direction != direction;
+  bool shouldReclip(_TriangleClipper oldClipper) =>
+      oldClipper.direction != direction;
 }

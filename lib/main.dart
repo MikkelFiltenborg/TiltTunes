@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'features/soundboard/screens/home_screen.dart';
-import 'features/soundboard/screens/sound_list_screen.dart';
+import 'package:flutter_sensors_plus/flutter_sensors_plus.dart';
+import 'dart:async';
 
 void main() {
   runApp(TiltTunesApp());
