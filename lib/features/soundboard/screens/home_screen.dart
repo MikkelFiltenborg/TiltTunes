@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:tile_tunes/data/sound_assignment_manager.dart';
 import 'settings_screen.dart';
 import 'dart:async';
+import 'dart:math';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadSoundAssignments();
-    _startListeningToGyroscope();
+    _startListeningToAccelerometer();
   }
 
   void _loadSoundAssignments() {
@@ -42,22 +43,24 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _startListeningToGyroscope() {
-    _gyroscopeSubscription = gyroscopeEventStream().listen((event) {
+  void _startListeningToAccelerometer() {
+    _gyroscopeSubscription = accelerometerEventStream().listen((event) {
       if (!_useTiltTrigger || !_canTrigger) return;
 
-      final x = event.x;
-      final y = event.y;
+      final x = event.x; // Roll
+      final y = event.y; // Pitch
+      final z = event.z; // Yaw
 
-      if (y < -_ySensitivity) {
-        _triggerButton(0); // Top
-      } else if (x < -_xSensitivity) {
-        _triggerButton(1); // Right
-      } else if (y > _ySensitivity) {
-        _triggerButton(2); // Bottom
-      } else if (x > _xSensitivity) {
-        _triggerButton(3); // Left
-      }
+      final pitch = atan2(-x, sqrt(y * y + z * z));
+      final roll = atan2(y, z);
+
+      final pitchDegrees = pitch * 180 / pi;
+      final rollDegrees = roll * 180 / pi;
+
+      if (rollDegrees > _xSensitivity * 90) {_triggerButton(0);}        // Tilt top
+      else if (pitchDegrees < -_ySensitivity * 90) {_triggerButton(1);} // Tilt right
+      else if (rollDegrees < -_xSensitivity * 90) {_triggerButton(2);}  // Tilt bottom
+      else if (pitchDegrees > _ySensitivity * 90) {_triggerButton(3);}  // Tilt left
     });
   }
 
@@ -211,7 +214,6 @@ class _TriangleButton extends StatelessWidget {
     required this.textAlign,
     required this.textPadding,
     required this.onTap,
-    super.key,
   });
 
   @override
