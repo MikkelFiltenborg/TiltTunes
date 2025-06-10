@@ -23,14 +23,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late StreamSubscription _accelerometerSubscription;
   bool _useTiltTrigger = true;
-  double _xSensitivity = 0.5; // Threshold for x axis
-  double _ySensitivity = 0.5; // Threshold for y axis
+  
+  double _xSensitivity = 0.5;
+  double _ySensitivity = 0.5;
+
   bool _canTrigger = true;
   int? _lastTriggeredIndex;
+
   double _filteredX = 0;
   double _filteredY = 0;
   double _filteredZ = 0;
+
   final double _alpha = 0.2;
+
+  final List<Color> buttonColors = [
+    const Color(0xFFFF6F3C), // Soft Orange
+    const Color(0xFFFF8A5B), // Warm Coral
+    const Color(0xFFFF7755), // Golden Yellow
+    const Color(0xFFD94F33), // Burnt Sienna
+  ];
 
   @override
   void initState() {
@@ -52,37 +63,25 @@ class _HomeScreenState extends State<HomeScreen> {
     _accelerometerSubscription = accelerometerEventStream().listen((event) {
       if (!_useTiltTrigger || !_canTrigger) return;
 
-      _filteredX = _alpha * event.x + (1 - _alpha) * _filteredX; // Roll
-      _filteredY = _alpha * event.y + (1 - _alpha) * _filteredY; // Pitch
-      _filteredZ = _alpha * event.z + (1 - _alpha) * _filteredZ; // Yaw
+      _filteredX = _alpha * event.x + (1 -_alpha) * _filteredX; // Roll
+      _filteredY = _alpha * event.y + (1 -_alpha) * _filteredY; // Pitch
+      _filteredZ = _alpha * event.z + (1 -_alpha) * _filteredZ; // Yaw
 
-      final pitch = atan2(
-        -_filteredX,
-        sqrt(_filteredY * _filteredY + _filteredZ * _filteredZ),
-      );
+      final pitch = atan2(-_filteredX, sqrt(_filteredY * _filteredY + _filteredZ * _filteredZ));
       final roll = atan2(_filteredY, _filteredZ);
 
       final pitchDegrees = pitch * 180 / pi;
       final rollDegrees = roll * 180 / pi;
 
-      if (rollDegrees > _xSensitivity * 45) {
-        _triggerButton(0);
-      } // Roll left
-      else if (pitchDegrees < -_ySensitivity * 45) {
-        _triggerButton(1);
-      } // Pitch forward
-      else if (rollDegrees < -_xSensitivity * 45) {
-        _triggerButton(2);
-      } // Roll right
-      else if (pitchDegrees > _ySensitivity * 45) {
-        _triggerButton(3);
-      } // Pitch backward
+      if (rollDegrees > _xSensitivity * 45) {_triggerButton(0);}       // Roll left
+      else if (pitchDegrees < -_ySensitivity * 45) {_triggerButton(1);} // Pitch forward
+      else if (rollDegrees < -_xSensitivity * 45) {_triggerButton(2);} // Roll right
+      else if (pitchDegrees > _ySensitivity * 45) {_triggerButton(3);}  // Pitch backward
     });
   }
 
   void _triggerButton(int index) {
-    if (_lastTriggeredIndex == index)
-      return; // Prevent repeat trigger for same direction
+    if (_lastTriggeredIndex == index) return; // Prevent repeat trigger for same direction
 
     _onButtonTap(context, index + 1);
     _lastTriggeredIndex = index;
@@ -106,24 +105,33 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text(
           'Tilt Tunes',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFFE0E0E0)),
         ),
         centerTitle: true,
+        backgroundColor: const Color(0xFF121212),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () async {
               final result = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
               );
 
               if (result is Map<String, dynamic>) {
                 setState(() {
                   _useTiltTrigger = result['useTilt'] ?? true;
-                  _xSensitivity = result['sensitivityX'] ?? 1.5;
-                  _ySensitivity = result['sensitivityY'] ?? 1.5;
+                  _xSensitivity = result['sensitivityX'] ?? 0.5;
+                  _ySensitivity = result['sensitivityY'] ?? 0.5;
                 });
+                _accelerometerSubscription.cancel();
+                _filteredX = 0;
+                _filteredY = 0;
+                _filteredZ = 0;
+
+                _startListeningToAccelerometer();
               }
               _loadSoundAssignments();
             },
@@ -144,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 right: 0,
                 height: height / 2,
                 child: _TriangleButton(
-                  color: Colors.blue,
+                  color: buttonColors[0],
                   direction: TriangleDirection.down,
                   text: soundTitles[0],
                   textAlign: Alignment.topCenter,
@@ -159,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 0,
                 width: width / 2,
                 child: _TriangleButton(
-                  color: Colors.yellow,
+                  color: buttonColors[1],
                   direction: TriangleDirection.left,
                   text: soundTitles[1],
                   textAlign: Alignment.centerRight,
@@ -174,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 0,
                 height: height / 2,
                 child: _TriangleButton(
-                  color: Colors.red,
+                  color: buttonColors[2],
                   direction: TriangleDirection.up,
                   text: soundTitles[2],
                   textAlign: Alignment.bottomCenter,
@@ -189,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 0,
                 width: width / 2,
                 child: _TriangleButton(
-                  color: Colors.green,
+                  color: buttonColors[3],
                   direction: TriangleDirection.right,
                   text: soundTitles[3],
                   textAlign: Alignment.centerLeft,
@@ -256,7 +264,7 @@ class _TriangleButton extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   softWrap: false,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Color(0xFFE0E0E0),
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     shadows: [
@@ -264,7 +272,7 @@ class _TriangleButton extends StatelessWidget {
                         blurRadius: 2,
                         color: Colors.black45,
                         offset: Offset(1, 1),
-                      ),
+                      )
                     ],
                   ),
                 ),
