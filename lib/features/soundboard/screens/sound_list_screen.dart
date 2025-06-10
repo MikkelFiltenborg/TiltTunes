@@ -11,11 +11,12 @@ class SoundListScreen extends StatefulWidget {
   _SoundListScreenState createState() => _SoundListScreenState();
 }
 
-
 class _SoundListScreenState extends State<SoundListScreen> {
   final FreesoundApiClient _apiClient = FreesoundApiClient();
   late Future<List<Sound>> _futureSounds;
-  final TextEditingController _searchController = TextEditingController(text: '');
+  final TextEditingController _searchController = TextEditingController(
+    text: '',
+  );
   String _currentlyPlayingUrl = '';
 
   @override
@@ -43,7 +44,9 @@ class _SoundListScreenState extends State<SoundListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Sounds',
+      appBar: AppBar(
+        title: Text(
+          'Sounds',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
         ),
         centerTitle: true,
@@ -64,10 +67,7 @@ class _SoundListScreenState extends State<SoundListScreen> {
                     onSubmitted: (_) => _search(),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: _search,
-                ),
+                IconButton(icon: Icon(Icons.search), onPressed: _search),
               ],
             ),
           ),
@@ -92,19 +92,25 @@ class _SoundListScreenState extends State<SoundListScreen> {
 
                     return ListTile(
                       title: Text(sound.name),
-                      subtitle: Text('${sound.duration.toStringAsFixed(1)} sec'),
+                      subtitle: Text(
+                        '${sound.duration.toStringAsFixed(1)} sec',
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: Icon(isPlaying ? Icons.stop : Icons.play_circle_outline_rounded),
+                            icon: Icon(
+                              isPlaying
+                                  ? Icons.stop
+                                  : Icons.play_circle_outline_rounded,
+                            ),
                             onPressed: () => _handlePlayPause(sound.previewUrl),
                           ),
                           if (widget.onAssign != null)
                             IconButton(
                               icon: Icon(Icons.add),
                               tooltip: 'Assign to Button',
-                              onPressed: () => _showAssignDialog(sound)
+                              onPressed: () => _showAssignDialog(sound),
                             ),
                         ],
                       ),
@@ -129,7 +135,7 @@ class _SoundListScreenState extends State<SoundListScreen> {
             mainAxisSize: MainAxisSize.min,
             children: List.generate(4, (index) {
               return ListTile(
-                title: Text('Button ${index+1}'),
+                title: Text('Button ${index + 1}'),
                 onTap: () {
                   Navigator.of(ctx).pop();
                   if (widget.onAssign != null) {

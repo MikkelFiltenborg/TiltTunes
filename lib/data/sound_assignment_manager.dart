@@ -10,7 +10,7 @@ class SoundAssignmentManager {
   }
 
   static Sound? getSoundForButton(int index) {
-    if (index >= 0 && index < 4){
+    if (index >= 0 && index < 4) {
       return _assignedSounds[index];
     }
     return null;

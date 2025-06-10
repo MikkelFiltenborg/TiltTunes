@@ -8,7 +8,6 @@ void main() {
 class TiltTunesApp extends StatelessWidget {
   const TiltTunesApp({super.key});
 
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -17,7 +16,7 @@ class TiltTunesApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home:HomeScreen(), // Defines Init Load Page
+      home: HomeScreen(), // Defines Init Load Page
     );
   }
 }

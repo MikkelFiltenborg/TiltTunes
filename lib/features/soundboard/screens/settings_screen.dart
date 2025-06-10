@@ -12,8 +12,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _useTiltTrigger = true; // Toggle Trigger State
-  double _sensitivityX = 1; // Initial Value X Slider
-  double _sensitivityY = 1; // Initial Value Y Slider
+  double _sensitivityX = 0.5; // Initial Value X Slider
+  double _sensitivityY = 0.5; // Initial Value Y Slider
 
   void _loadSettings() async {
     final preferences = await SharedPreferences.getInstance();

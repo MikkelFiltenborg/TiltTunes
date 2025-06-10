@@ -21,11 +21,16 @@ class _HomeScreenState extends State<HomeScreen> {
     'No Sound 4',
   ];
 
-  late StreamSubscription _gyroscopeSubscription;
+  late StreamSubscription _accelerometerSubscription;
   bool _useTiltTrigger = true;
   double _xSensitivity = 0.5; // Threshold for x axis
   double _ySensitivity = 0.5; // Threshold for y axis
   bool _canTrigger = true;
+  int? _lastTriggeredIndex;
+  double _filteredX = 0;
+  double _filteredY = 0;
+  double _filteredZ = 0;
+  final double _alpha = 0.2;
 
   @override
   void initState() {
@@ -44,37 +49,54 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _startListeningToAccelerometer() {
-    _gyroscopeSubscription = accelerometerEventStream().listen((event) {
+    _accelerometerSubscription = accelerometerEventStream().listen((event) {
       if (!_useTiltTrigger || !_canTrigger) return;
 
-      final x = event.x; // Roll
-      final y = event.y; // Pitch
-      final z = event.z; // Yaw
+      _filteredX = _alpha * event.x + (1 - _alpha) * _filteredX; // Roll
+      _filteredY = _alpha * event.y + (1 - _alpha) * _filteredY; // Pitch
+      _filteredZ = _alpha * event.z + (1 - _alpha) * _filteredZ; // Yaw
 
-      final pitch = atan2(-x, sqrt(y * y + z * z));
-      final roll = atan2(y, z);
+      final pitch = atan2(
+        -_filteredX,
+        sqrt(_filteredY * _filteredY + _filteredZ * _filteredZ),
+      );
+      final roll = atan2(_filteredY, _filteredZ);
 
       final pitchDegrees = pitch * 180 / pi;
       final rollDegrees = roll * 180 / pi;
 
-      if (rollDegrees > _xSensitivity * 90) {_triggerButton(0);}        // Tilt top
-      else if (pitchDegrees < -_ySensitivity * 90) {_triggerButton(1);} // Tilt right
-      else if (rollDegrees < -_xSensitivity * 90) {_triggerButton(2);}  // Tilt bottom
-      else if (pitchDegrees > _ySensitivity * 90) {_triggerButton(3);}  // Tilt left
+      if (rollDegrees > _xSensitivity * 45) {
+        _triggerButton(0);
+      } // Roll left
+      else if (pitchDegrees < -_ySensitivity * 45) {
+        _triggerButton(1);
+      } // Pitch forward
+      else if (rollDegrees < -_xSensitivity * 45) {
+        _triggerButton(2);
+      } // Roll right
+      else if (pitchDegrees > _ySensitivity * 45) {
+        _triggerButton(3);
+      } // Pitch backward
     });
   }
 
   void _triggerButton(int index) {
+    if (_lastTriggeredIndex == index)
+      return; // Prevent repeat trigger for same direction
+
     _onButtonTap(context, index + 1);
+    _lastTriggeredIndex = index;
+
     _canTrigger = false;
     Future.delayed(const Duration(seconds: 1), () {
       _canTrigger = true;
+      _lastTriggeredIndex = null; // Reset to allow new triggers
     });
   }
 
   @override
   void dispose() {
-    _gyroscopeSubscription.cancel();
+    _accelerometerSubscription.cancel();
     super.dispose();
   }
 
@@ -93,9 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () async {
               final result = await Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
 
               if (result is Map<String, dynamic>) {
@@ -244,7 +264,7 @@ class _TriangleButton extends StatelessWidget {
                         blurRadius: 2,
                         color: Colors.black45,
                         offset: Offset(1, 1),
-                      )
+                      ),
                     ],
                   ),
                 ),
