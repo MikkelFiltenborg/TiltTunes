@@ -1,6 +1,6 @@
 # tilt_tunes
 
-A new Flutter project.
+Tilt Tunes is a simple soundboard app, that implements native functionality of mobile devices allowing the user to activate buttons with movement, thus playing sounds assigned to the buttons.
 
 ## Getting Started
 
