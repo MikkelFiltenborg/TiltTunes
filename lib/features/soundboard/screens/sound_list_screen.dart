@@ -56,6 +56,41 @@ class _SoundListScreenState extends State<SoundListScreen> {
     super.dispose();
   }
 
+  void _showAssignDialog(Sound sound) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AppColors.darkBackground,
+          titleTextStyle: const TextStyle(
+            color: AppColors.mintGreen,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+          title: const Text('Assign to Button'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(4, (index) {
+              return ListTile(
+                title: Text(
+                  'Button ${index + 1}',
+                  style: const TextStyle(color: AppColors.mutedWhite),
+                ),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  if (widget.onAssign != null) {
+                    widget.onAssign!(sound, index);
+                  }
+                  Navigator.of(context).pop();
+                },
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,32 +224,6 @@ class _SoundListScreenState extends State<SoundListScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  void _showAssignDialog(Sound sound) {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Assign to Button'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(4, (index) {
-              return ListTile(
-                title: Text('Button ${index + 1}'),
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  if (widget.onAssign != null) {
-                    widget.onAssign!(sound, index);
-                  }
-                  Navigator.of(context).pop();
-                },
-              );
-            }),
-          ),
-        );
-      },
     );
   }
 }
