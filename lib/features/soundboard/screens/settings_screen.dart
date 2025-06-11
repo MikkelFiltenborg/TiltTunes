@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tile_tunes/data/sound_assignment_manager.dart';
+import 'package:tilt_tunes/data/sound_assignment_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../assets/palette/app_colors.dart';
 import 'sound_list_screen.dart';

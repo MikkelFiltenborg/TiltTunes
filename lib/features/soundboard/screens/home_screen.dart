@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:tile_tunes/data/sound_assignment_manager.dart';
+import 'package:tilt_tunes/data/sound_assignment_manager.dart';
 import '../assets/palette/app_colors.dart';
 import 'settings_screen.dart';
 import 'dart:async';
