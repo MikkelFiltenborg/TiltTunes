@@ -1,5 +1,5 @@
 name: tilt_tunes
-description: "Tilt Tunes is a simple soundboard app, that implements native functionality of mobile devices allowing the user to activate buttons with movement, thus playing sounds assigned to the buttons."
+description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
