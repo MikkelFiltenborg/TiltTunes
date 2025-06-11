@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:tile_tunes/data/sound_assignment_manager.dart';
+import 'package:tilt_tunes/data/sound_assignment_manager.dart';
+import '../assets/palette/app_colors.dart';
 import 'settings_screen.dart';
 import 'dart:async';
 import 'dart:math';
@@ -15,15 +16,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<String> soundTitles = [
-    'No Sound 1',
-    'No Sound 2',
-    'No Sound 3',
-    'No Sound 4',
+    '1',
+    '2',
+    '3',
+    '4',
   ];
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  String? _currentlyPlayingUrl;
 
   late StreamSubscription _accelerometerSubscription;
   bool _useTiltTrigger = true;
-  
+
   double _xSensitivity = 0.5;
   double _ySensitivity = 0.5;
 
@@ -36,13 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final double _alpha = 0.2;
 
-  final List<Color> buttonColors = [
-    const Color(0xFFFF6F3C), // Soft Orange
-    const Color(0xFFFF8A5B), // Warm Coral
-    const Color(0xFFFF7755), // Golden Yellow
-    const Color(0xFFD94F33), // Burnt Sienna
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -54,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       for (int i = 0; i < 4; i++) {
         final sound = SoundAssignmentManager.getSoundForButton(i);
-        soundTitles[i] = sound?.name ?? 'Button ${i + 1}';
+        soundTitles[i] = sound?.name ?? '     Button ${i + 1}';
       }
     });
   }
@@ -63,25 +60,36 @@ class _HomeScreenState extends State<HomeScreen> {
     _accelerometerSubscription = accelerometerEventStream().listen((event) {
       if (!_useTiltTrigger || !_canTrigger) return;
 
-      _filteredX = _alpha * event.x + (1 -_alpha) * _filteredX; // Roll
-      _filteredY = _alpha * event.y + (1 -_alpha) * _filteredY; // Pitch
-      _filteredZ = _alpha * event.z + (1 -_alpha) * _filteredZ; // Yaw
+      _filteredX = _alpha * event.x + (1 - _alpha) * _filteredX; // Roll
+      _filteredY = _alpha * event.y + (1 - _alpha) * _filteredY; // Pitch
+      _filteredZ = _alpha * event.z + (1 - _alpha) * _filteredZ; // Yaw
 
-      final pitch = atan2(-_filteredX, sqrt(_filteredY * _filteredY + _filteredZ * _filteredZ));
+      final pitch = atan2(
+        -_filteredX,
+        sqrt(_filteredY * _filteredY + _filteredZ * _filteredZ),
+      );
       final roll = atan2(_filteredY, _filteredZ);
 
       final pitchDegrees = pitch * 180 / pi;
       final rollDegrees = roll * 180 / pi;
 
-      if (rollDegrees > _xSensitivity * 45) {_triggerButton(0);}       // Roll left
-      else if (pitchDegrees < -_ySensitivity * 45) {_triggerButton(1);} // Pitch forward
-      else if (rollDegrees < -_xSensitivity * 45) {_triggerButton(2);} // Roll right
-      else if (pitchDegrees > _ySensitivity * 45) {_triggerButton(3);}  // Pitch backward
+      if (rollDegrees > _xSensitivity * 45) {
+        _triggerButton(0);
+      } // Roll left
+      else if (pitchDegrees < -_ySensitivity * 45) {
+        _triggerButton(1);
+      } // Pitch forward
+      else if (rollDegrees < -_xSensitivity * 45) {
+        _triggerButton(2);
+      } // Roll right
+      else if (pitchDegrees > _ySensitivity * 45) {
+        _triggerButton(3);
+      } // Pitch backward
     });
   }
 
   void _triggerButton(int index) {
-    if (_lastTriggeredIndex == index) return; // Prevent repeat trigger for same direction
+    if (_lastTriggeredIndex == index) {return;}
 
     _onButtonTap(context, index + 1);
     _lastTriggeredIndex = index;
@@ -93,31 +101,61 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _onButtonTap(BuildContext context, int buttonNumber) async {
+    final sound = SoundAssignmentManager.getSoundForButton(buttonNumber - 1);
+    if (sound == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No sound assigned to Button $buttonNumber')),
+      );
+      return;
+    }
+
+    final isSameSound = sound.previewUrl == _currentlyPlayingUrl;
+    final isPlaying = _audioPlayer.state == PlayerState.playing;
+
+    if (isPlaying && isSameSound) {
+      await _audioPlayer.stop();
+      setState(() {
+        _currentlyPlayingUrl = null;
+      });
+    } else {
+      await _audioPlayer.stop(); // Stop any current sound
+      await _audioPlayer.play(UrlSource(sound.previewUrl));
+      setState(() {
+        _currentlyPlayingUrl = sound.previewUrl;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _accelerometerSubscription.cancel();
     super.dispose();
+    _audioPlayer.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Tilt Tunes',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFFE0E0E0)),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            color: AppColors.mintGreen,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: AppColors.darkBackground,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
+            color: AppColors.mutedWhite,
             onPressed: () async {
               final result = await Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
 
               if (result is Map<String, dynamic>) {
@@ -152,11 +190,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 right: 0,
                 height: height / 2,
                 child: _TriangleButton(
-                  color: buttonColors[0],
+                  color: AppColors.fernGreen,
                   direction: TriangleDirection.down,
                   text: soundTitles[0],
                   textAlign: Alignment.topCenter,
-                  textPadding: const EdgeInsets.only(top: 75, left: 50),
+                  textPadding: const EdgeInsets.only(top: 75),
                   onTap: () => _onButtonTap(context, 1),
                 ),
               ),
@@ -167,11 +205,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 0,
                 width: width / 2,
                 child: _TriangleButton(
-                  color: buttonColors[1],
+                  color: AppColors.viridianGreen,
                   direction: TriangleDirection.left,
                   text: soundTitles[1],
                   textAlign: Alignment.centerRight,
-                  textPadding: const EdgeInsets.only(right: 0),
+                  textPadding: const EdgeInsets.only(right: 20),
                   onTap: () => _onButtonTap(context, 2),
                 ),
               ),
@@ -182,11 +220,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 0,
                 height: height / 2,
                 child: _TriangleButton(
-                  color: buttonColors[2],
+                  color: AppColors.fernGreen,
                   direction: TriangleDirection.up,
                   text: soundTitles[2],
                   textAlign: Alignment.bottomCenter,
-                  textPadding: const EdgeInsets.only(bottom: 75, left: 50),
+                  textPadding: const EdgeInsets.only(bottom: 75),
                   onTap: () => _onButtonTap(context, 3),
                 ),
               ),
@@ -197,11 +235,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 0,
                 width: width / 2,
                 child: _TriangleButton(
-                  color: buttonColors[3],
+                  color: AppColors.viridianGreen,
                   direction: TriangleDirection.right,
                   text: soundTitles[3],
                   textAlign: Alignment.centerLeft,
-                  textPadding: const EdgeInsets.only(left: 50),
+                  textPadding: const EdgeInsets.only(left: 20),
                   onTap: () => _onButtonTap(context, 4),
                 ),
               ),
@@ -210,18 +248,6 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     );
-  }
-
-  void _onButtonTap(BuildContext context, int buttonNumber) async {
-    final sound = SoundAssignmentManager.getSoundForButton(buttonNumber - 1);
-    if (sound != null) {
-      final player = AudioPlayer();
-      await player.play(UrlSource(sound.previewUrl));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No sound assigned to Button $buttonNumber')),
-      );
-    }
   }
 }
 
@@ -264,15 +290,15 @@ class _TriangleButton extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   softWrap: false,
                   style: const TextStyle(
-                    color: Color(0xFFE0E0E0),
+                    color: AppColors.mutedWhite,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     shadows: [
                       Shadow(
                         blurRadius: 2,
-                        color: Colors.black45,
+                        color: AppColors.darkBackground,
                         offset: Offset(1, 1),
-                      )
+                      ),
                     ],
                   ),
                 ),
