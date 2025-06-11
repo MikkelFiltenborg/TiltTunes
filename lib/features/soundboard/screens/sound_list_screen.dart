@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'assets/app_colors.dart';
+import '../assets/palette/app_colors.dart';
 import '../../../core/api_client.dart';
 import '../../../data/sound_model.dart';
 
