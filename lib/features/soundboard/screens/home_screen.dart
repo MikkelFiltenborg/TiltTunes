@@ -16,10 +16,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<String> soundTitles = [
-    'No Sound 1',
-    'No Sound 2',
-    'No Sound 3',
-    'No Sound 4',
+    '1',
+    '2',
+    '3',
+    '4',
   ];
 
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       for (int i = 0; i < 4; i++) {
         final sound = SoundAssignmentManager.getSoundForButton(i);
-        soundTitles[i] = sound?.name ?? 'Button ${i + 1}';
+        soundTitles[i] = sound?.name ?? '     Button ${i + 1}';
       }
     });
   }
@@ -194,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   direction: TriangleDirection.down,
                   text: soundTitles[0],
                   textAlign: Alignment.topCenter,
-                  textPadding: const EdgeInsets.only(top: 75, left: 50),
+                  textPadding: const EdgeInsets.only(top: 75),
                   onTap: () => _onButtonTap(context, 1),
                 ),
               ),
@@ -209,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   direction: TriangleDirection.left,
                   text: soundTitles[1],
                   textAlign: Alignment.centerRight,
-                  textPadding: const EdgeInsets.only(right: 0),
+                  textPadding: const EdgeInsets.only(right: 20),
                   onTap: () => _onButtonTap(context, 2),
                 ),
               ),
@@ -224,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   direction: TriangleDirection.up,
                   text: soundTitles[2],
                   textAlign: Alignment.bottomCenter,
-                  textPadding: const EdgeInsets.only(bottom: 75, left: 50),
+                  textPadding: const EdgeInsets.only(bottom: 75),
                   onTap: () => _onButtonTap(context, 3),
                 ),
               ),
@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   direction: TriangleDirection.right,
                   text: soundTitles[3],
                   textAlign: Alignment.centerLeft,
-                  textPadding: const EdgeInsets.only(left: 50),
+                  textPadding: const EdgeInsets.only(left: 20),
                   onTap: () => _onButtonTap(context, 4),
                 ),
               ),
