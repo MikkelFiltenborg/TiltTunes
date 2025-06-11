@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:tile_tunes/data/sound_assignment_manager.dart';
+import 'assets/app_colors.dart';
 import 'settings_screen.dart';
 import 'dart:async';
 import 'dart:math';
@@ -35,13 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
   double _filteredZ = 0;
 
   final double _alpha = 0.2;
-
-  final List<Color> buttonColors = [
-    const Color(0xFFFF6F3C), // Soft Orange
-    const Color(0xFFFF8A5B), // Warm Coral
-    const Color(0xFFFF7755), // Golden Yellow
-    const Color(0xFFD94F33), // Burnt Sienna
-  ];
 
   @override
   void initState() {
@@ -103,15 +97,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Tilt Tunes',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFFE0E0E0)),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.mintGreen,),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: AppColors.darkBackground,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
+            color: AppColors.mutedWhite,
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -152,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 right: 0,
                 height: height / 2,
                 child: _TriangleButton(
-                  color: buttonColors[0],
+                  color: AppColors.fernGreen,
                   direction: TriangleDirection.down,
                   text: soundTitles[0],
                   textAlign: Alignment.topCenter,
@@ -167,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 0,
                 width: width / 2,
                 child: _TriangleButton(
-                  color: buttonColors[1],
+                  color: AppColors.viridianGreen,
                   direction: TriangleDirection.left,
                   text: soundTitles[1],
                   textAlign: Alignment.centerRight,
@@ -182,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 0,
                 height: height / 2,
                 child: _TriangleButton(
-                  color: buttonColors[2],
+                  color: AppColors.fernGreen,
                   direction: TriangleDirection.up,
                   text: soundTitles[2],
                   textAlign: Alignment.bottomCenter,
@@ -197,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 0,
                 width: width / 2,
                 child: _TriangleButton(
-                  color: buttonColors[3],
+                  color: AppColors.viridianGreen,
                   direction: TriangleDirection.right,
                   text: soundTitles[3],
                   textAlign: Alignment.centerLeft,
@@ -264,13 +259,13 @@ class _TriangleButton extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   softWrap: false,
                   style: const TextStyle(
-                    color: Color(0xFFE0E0E0),
+                    color: AppColors.mutedWhite,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     shadows: [
                       Shadow(
                         blurRadius: 2,
-                        color: Colors.black45,
+                        color: AppColors.darkBackground,
                         offset: Offset(1, 1),
                       )
                     ],
